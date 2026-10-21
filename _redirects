@@ -1,10 +1,26 @@
-# Cloudflare Pages 重定向配置
-# 文档: https://developers.cloudflare.com/pages/configuration/redirects/
+# Cloudflare 重定向配置
+# 文档: https://developers.cloudflare.com/workers/static-assets/
 #
-# 本项目是单页应用，无前端路由，只需保证根路径指向 index.html。
-# 不要配置 /* -> /index.html 200 的兜底规则：
-# 那会把缺失的音频/字幕/字体文件也重写成 HTML，
-# 导致 <audio> 收到 HTML 内容而报错、字体加载失败。
-
-# 根路径
-/  /index.html  200
+# 【重要】本项目不需要任何 _redirects 规则，此文件仅作说明保留。
+#
+# 原因：
+#   Workers 静态资源默认 html_handling = "auto-trailing-slash"，已内置：
+#     GET /            → 200  /index.html
+#     GET /index.html  → 307  → /
+#
+#   若在此处再写 `/  /index.html  200`，会与内置规则冲突形成无限循环，
+#   部署时报错：
+#     Invalid _redirects configuration: Infinite loop detected in this rule.
+#     This would cause a redirect to strip `.html` or `/index` and end up
+#     triggering this rule again. [code: 100324]
+#
+# 同样不要配置 `/*  /index.html  200` 的 SPA 兜底规则：
+#   那会把缺失的音频/字幕/字体请求也重写成 HTML，
+#   导致 <audio> 收到 HTML 而报格式错误、字体加载失败。
+#
+# 本项目是单页应用但无前端路由，所有页面都由 index.html 承载，
+# 静态资源按真实路径直接命中，无需任何重定向。
+#
+# 如果将来确实需要重定向，正确写法示例（避免循环）：
+#   /old-page  /new-page  301
+#   /docs/*    /manual/:splat  301

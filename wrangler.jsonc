@@ -1,0 +1,36 @@
+{
+  // ============================================================
+  // Cloudflare Workers 静态资源配置
+  // 文档: https://developers.cloudflare.com/workers/static-assets/
+  // ============================================================
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "audiobook-player",
+  "compatibility_date": "2026-10-21",
+
+  "observability": {
+    "enabled": true
+  },
+
+  "assets": {
+    // 仓库根目录即静态资源目录
+    "directory": ".",
+
+    // auto-trailing-slash（默认值，显式写出来便于理解）：
+    //   GET /            → 200  /index.html
+    //   GET /index.html  → 307  → /
+    // 这是本项目需要的行为。
+    //
+    // 不要再在 _redirects 里写 `/  /index.html  200`，
+    // 那会与内置规则冲突，部署时报：
+    //   Invalid _redirects configuration: Infinite loop detected
+    //   [code: 100324]
+    "html_handling": "auto-trailing-slash"
+
+    // not_found_handling 保持默认（不写即返回 404）。
+    // 可选值只有 "single-page-application" 和 "404-page"：
+    //   - "single-page-application"：未命中资源返回 index.html，
+    //     会导致缺失的音频/字幕/字体请求收到 HTML，<audio> 报格式错误
+    //   - "404-page"：需要额外的 404.html
+    // 本项目所有资源都按真实路径直接命中，无需兜底，故不设置。
+  }
+}

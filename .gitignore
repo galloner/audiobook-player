@@ -36,6 +36,11 @@ serve.py
 _*.py
 _*.mjs
 
+# ---------- Wrangler 本地产物 ----------
+# 注意：wrangler.jsonc 是部署配置，必须入库，不要忽略
+.wrangler/
+.dev.vars
+
 # ---------- Python 缓存 ----------
 __pycache__/
 *.py[cod]

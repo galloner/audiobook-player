@@ -1,0 +1,59 @@
+# ============================================================
+# Cloudflare Workers 静态资源上传排除规则
+# 文档: https://developers.cloudflare.com/workers/static-assets/binding/#ignoring-assets
+#
+# 格式与 .gitignore 相同。匹配的文件不会作为静态资源上传。
+#
+# 背景：部署时 wrangler 会把 assets.directory 下「所有文件」当作静态资源，
+# 包括 .git/ 目录。日志里出现大量 `+ /.git/HEAD`、`+ /.git/config` 即为误传。
+# 用本文件把它们排除掉。
+# ============================================================
+
+# ---------- Git 元数据（绝不能公开）----------
+.git/
+.gitignore
+
+# ---------- 本文件自身（无需作为可下载资源）----------
+.assetsignore
+
+# ---------- Wrangler 自身产物 ----------
+.wrangler/
+wrangler.jsonc
+wrangler.toml
+
+# ---------- 本项目用于 Cloudflare 的配置文件 ----------
+# 这些是给平台读取的配置，不需要作为可下载资源暴露
+_headers
+_redirects
+
+# ---------- 构建 / 自检脚本（不入库也不上传）----------
+*.py
+_*.mjs
+
+# ---------- 文档 ----------
+README.md
+*.md
+
+# ---------- 本地媒体（若存在也不上传）----------
+books/
+subs/
+*.srt
+*.vtt
+*.lrc
+
+# ---------- 系统与编辑器 ----------
+.DS_Store
+Thumbs.db
+desktop.ini
+.idea/
+.vscode/
+node_modules/
+
+# ---------- 临时与备份 ----------
+*.log
+*.tmp
+*.bak
+*.bak2
+*.orig
+__pycache__/
+*.py[cod]
