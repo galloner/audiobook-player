@@ -1,0 +1,10 @@
+# Cloudflare Pages 重定向配置
+# 文档: https://developers.cloudflare.com/pages/configuration/redirects/
+#
+# 本项目是单页应用，无前端路由，只需保证根路径指向 index.html。
+# 不要配置 /* -> /index.html 200 的兜底规则：
+# 那会把缺失的音频/字幕/字体文件也重写成 HTML，
+# 导致 <audio> 收到 HTML 内容而报错、字体加载失败。
+
+# 根路径
+/  /index.html  200

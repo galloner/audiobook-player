@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b0f1a">
+<title>有声书 · 在线播放</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<!-- 动画背景（全屏，永远在最底层） -->
+<canvas id="bg" aria-hidden="true"></canvas>
+<div class="vignette" aria-hidden="true"></div>
+
+<!-- 顶栏（极简，播放时自动隐藏） -->
+<div id="topbar">
+  <button id="sidebarToggle" class="mini" title="显示/隐藏目录 (L)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+    <span class="lbl">目录</span>
+  </button>
+  <div class="grow"></div>
+  <button id="bgBtn" class="mini" title="切换背景动画 (B)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M18.4 5.6L17 7M7 17l-1.4 1.4"/><circle cx="12" cy="12" r="4"/></svg>
+    <span class="lbl">背景</span>
+  </button>
+  <button id="subBtn" class="mini" title="字幕模式 (C)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M7 14h4M13 14h4"/></svg>
+    <span class="lbl">字幕：单行</span>
+  </button>
+  <button id="setBtn" class="mini" title="设置" aria-label="设置">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6 1.65 1.65 0 0 0 10 3.09V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9c.14.37.4.7.73.94"/></svg>
+  </button>
+</div>
+
+<!-- 设置面板 -->
+<div id="setPanel" class="set-panel" style="display:none">
+  <div class="set-section">背景音乐</div>
+  <div class="set-row"><label class="chk-inline"><input type="checkbox" id="bgmChk"> 启用背景音乐 (M)</label></div>
+  <div class="set-row" id="bgmTrackRow" style="display:none"><label>曲目</label>
+    <select id="bgmTrackSel"></select>
+  </div>
+  <div class="set-row" id="bgmVolRow" style="display:none"><label>音量 <span id="bgmVolVal">30%</span></label>
+    <input id="bgmVolRange" type="range" min="0" max="100" step="5" value="30">
+  </div>
+  <div class="set-section">字幕</div>
+  <div class="set-row"><label>位置</label>
+    <select id="subPosSel"><option value="bottom">底部悬浮</option><option value="center">屏幕居中</option><option value="top">顶部悬浮</option></select>
+  </div>
+  <div class="set-row"><label>字号 <span id="subFontVal">18px</span></label>
+    <input id="subFontRange" type="range" min="14" max="32" step="2" value="18">
+  </div>
+  <div class="set-row"><label>字幕字体</label>
+    <select id="subFontFamilySel"></select>
+  </div>
+  <div class="set-row"><label class="chk-inline"><input type="checkbox" id="pipChk"> 悬浮字幕窗</label></div>
+  <div class="set-section">显示</div>
+  <div class="set-row"><label class="chk-inline"><input type="checkbox" id="showTitleChk" checked> 章节标题</label></div>
+  <div class="set-row"><label class="chk-inline"><input type="checkbox" id="showPctChk" checked> 进度百分数</label></div>
+  <div class="set-row"><label class="chk-inline"><input type="checkbox" id="showControlsChk" checked> 音频操作按钮</label></div>
+</div>
+
+<!-- 侧边栏（可收缩隐藏） -->
+<aside id="sidebar">
+  <div class="brand">🎧 有声书</div>
+  <div id="bookView" class="panel grow">
+    <div class="panel-title">书目<span class="muted" id="bookCount"></span></div>
+    <ul id="bookList" class="list"></ul>
+    <div class="empty muted" id="bookEmpty">暂无书目</div>
+  </div>
+  <div id="chapterView" class="panel grow" style="display:none">
+    <button id="backBtn2" class="mini" style="margin-bottom:6px">← 返回书目</button>
+    <div class="panel-title">章节<span class="muted" id="chapterCount"></span></div>
+    <ol id="chapterList" class="list"></ol>
+    <div id="chapterPager" class="pager" style="display:none">
+      <button id="pagePrev" class="mini" title="上一页">‹</button>
+      <span id="pageInfo" class="muted"></span>
+      <button id="pageNext" class="mini" title="下一页">›</button>
+    </div>
+  </div>
+  <div class="side-foot muted" id="sideFoot"></div>
+</aside>
+
+<!-- 主舞台 -->
+<main id="stage">
+  <!-- 主页：居中书架 -->
+  <div id="homeView" class="view-home">
+    <div class="home-title">🎧 有声书库</div>
+    <div id="bookGrid" class="book-grid"></div>
+    <div class="empty muted" id="homeEmpty">暂无书目，请运行 python build_manifest.py</div>
+  </div>
+
+  <!-- 播放器视图 -->
+  <div id="playerView" class="view-player" style="display:none">
+    <div class="title-area" id="titleArea">
+      <div class="chapter-title-art" id="chapterTitleArt">—</div>
+      <div class="progress-pct-wrap">
+        <svg class="progress-ring" viewBox="0 0 120 120" aria-hidden="true">
+          <defs>
+            <linearGradient id="ringGrad" x1="0" y1="0" x2="120" y2="120" gradientUnits="userSpaceOnUse">
+              <stop offset="0" class="ring-grad-start" />
+              <stop offset="1" class="ring-grad-end" />
+            </linearGradient>
+          </defs>
+          <circle class="ring-track" cx="60" cy="60" r="54" />
+          <circle class="ring-fill" id="ringFill" cx="60" cy="60" r="54" />
+        </svg>
+        <div class="progress-pct-art" id="progressPct">0%</div>
+      </div>
+    </div>
+    <!-- 展开字幕：毛玻璃框，居中展开 -->
+    <div class="lyrics-wrap" id="lyricsWrap" aria-hidden="true">
+      <div class="lyrics" id="lyrics">
+        <ol id="lyricsList" class="lyrics-list"></ol>
+        <div id="lyricsEmpty" class="empty muted">本章无字幕</div>
+      </div>
+    </div>
+    <div class="bottom-bar">
+      <div class="progress" id="progress" role="slider" aria-label="播放进度" tabindex="0">
+        <div class="bar" id="bar"></div>
+        <div class="knob" id="knob"></div>
+      </div>
+      <div class="times">
+        <span id="timeNow">00:00</span>
+        <span class="muted" id="timeLeft">-00:00</span>
+        <span id="timeTotal">00:00</span>
+      </div>
+      <div class="controls" id="controlsRow">
+        <button id="prevBtn" title="上一章 (P)" aria-label="上一章">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h2v14H6zM20 5v14L9 12z"/></svg>
+        </button>
+        <button id="backBtn" class="has-num" title="后退 10 秒 (←)" aria-label="后退10秒">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg>
+          <span class="ctrl-num">10</span>
+        </button>
+        <button id="playBtn" class="primary" title="播放/暂停 (空格)" aria-label="播放">
+          <svg class="i-play" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13a1 1 0 0 0 1.53.85l10-6.5a1 1 0 0 0 0-1.7l-10-6.5A1 1 0 0 0 8 5.5z"/></svg>
+          <svg class="i-pause" viewBox="0 0 24 24" fill="currentColor"><rect x="7" y="5" width="3.6" height="14" rx="1.2"/><rect x="13.4" y="5" width="3.6" height="14" rx="1.2"/></svg>
+        </button>
+        <button id="fwdBtn" class="has-num" title="前进 10 秒 (→)" aria-label="前进10秒">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 4v5h-5"/></svg>
+          <span class="ctrl-num">10</span>
+        </button>
+        <button id="nextBtn" title="下一章 (N)" aria-label="下一章">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 5h2v14h-2zM4 5v14l11-7z"/></svg>
+        </button>
+        <label class="rate" title="播放速度">倍速
+          <select id="rateSel">
+            <option value="0.75">0.75×</option><option value="1" selected>1.0×</option>
+            <option value="1.25">1.25×</option><option value="1.5">1.5×</option>
+            <option value="1.75">1.75×</option><option value="2">2.0×</option>
+          </select>
+        </label>
+        <label class="vol" title="音量">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;flex-shrink:0"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/></svg>
+          <input id="volRange" type="range" min="0" max="1" step="0.01" value="1" aria-label="音量">
+        </label>
+        <label class="chk" title="播完自动下一章"><input type="checkbox" id="autoNext" checked> 自动连播</label>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- 字幕单行 overlay -->
+<div id="subOverlay" class="sub-overlay" aria-hidden="true">
+  <div id="subLine" class="sub-line"></div>
+</div>
+
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+<audio id="audio" preload="metadata"></audio>
+<audio id="bgmAudio" loop preload="auto"></audio>
+
+<script src="js/background.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

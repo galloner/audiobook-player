@@ -1,0 +1,10 @@
+[
+  { "file": "STZHONGS.TTF",   "name": "华文中宋",   "family": "STZhongsong" },
+  { "file": "STKAITI.TTF",    "name": "华文楷体",   "family": "STKaiti" },
+  { "file": "STLITI.TTF",     "name": "华文隶书",   "family": "STLiti" },
+  { "file": "STXIHEI.TTF",    "name": "华文细黑",   "family": "STXihei" },
+  { "file": "SIMHEI.TTF",     "name": "黑体",       "family": "SimHei" },
+  { "file": "FZSTK.TTF",      "name": "方正舒体",   "family": "FZShuTi" },
+  { "file": "FZYTK.TTF",      "name": "方正姚体",   "family": "FZYaoTi" },
+  { "file": "华康方圆体W7.TTC","name": "华康方圆体W7","family": "DFFangYuanW7-GB" }
+]

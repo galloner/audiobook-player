@@ -1,0 +1,49 @@
+# Cloudflare Pages 响应头配置
+# 文档: https://developers.cloudflare.com/pages/configuration/headers/
+
+# ---------- 全局安全头 ----------
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  X-Frame-Options: SAMEORIGIN
+
+# ---------- 音频：长缓存 + 明确声明 Range 支持 ----------
+# MP3/OGG/FLAC 等浏览器需靠 Range 才能拖动进度条。
+# Cloudflare CDN 原生支持 Range（源站不支持时 CDN 会自动下载完整文件再切区间返回 206），
+# 这里显式声明 Accept-Ranges 让浏览器提前知道可以 seek。
+/books/*
+  Cache-Control: public, max-age=31536000, immutable
+  Accept-Ranges: bytes
+
+/bgm/*
+  Cache-Control: public, max-age=31536000, immutable
+  Accept-Ranges: bytes
+
+# ---------- 字体：长缓存（字体体积大，缓存收益最高） ----------
+/fonts/*
+  Cache-Control: public, max-age=31536000, immutable
+  Access-Control-Allow-Origin: *
+
+# ---------- 静态资源：中等缓存 ----------
+/css/*
+  Cache-Control: public, max-age=604800
+
+/js/*
+  Cache-Control: public, max-age=604800
+
+# ---------- 数据文件：短缓存（清单更新后需尽快生效） ----------
+/manifest.json
+  Cache-Control: public, max-age=300
+
+/books-config/*
+  Cache-Control: public, max-age=300
+
+/subs/*
+  Cache-Control: public, max-age=86400
+
+# ---------- HTML：不缓存，保证发版立即生效 ----------
+/
+  Cache-Control: public, max-age=0, must-revalidate
+
+/index.html
+  Cache-Control: public, max-age=0, must-revalidate

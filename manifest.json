@@ -1,0 +1,18 @@
+{
+  "version": 4,
+  "baseURL": "./",
+  "generatedAt": "2026-09-26T16:34:08Z",
+  "bookCount": 1,
+  "bgm": [
+    "bgm/The Truth That You Leave - Pianoboy高至豪.mp3",
+    "bgm/Go Time - Mark Petrie.mp3"
+  ],
+  "books": [
+    {
+      "id": "打卡-人在洪荒-刚捏爆三足金乌-by-何为孤独",
+      "title": "打卡，人在洪荒，刚捏爆三足金乌 by 何为孤独",
+      "description": "",
+      "config": "books-config/打卡-人在洪荒-刚捏爆三足金乌-by-何为孤独.json"
+    }
+  ]
+}

@@ -1,0 +1,71 @@
+# ============================================================
+# 有声小说播放器（前端）· Git 忽略规则
+#
+# 本仓库只包含「播放器前端运行必需」的文件：
+#   index.html         入口
+#   css/style.css      样式
+#   js/app.js          主逻辑
+#   js/background.js   动态背景
+#   manifest.json      书目索引
+#   books-config/*.json 章节索引（媒体指向云盘直链）
+#   fonts/*            字幕字体
+#   bgm/*.mp3          背景音乐
+#   _headers           静态托管响应头
+#   _redirects         静态托管重定向
+#
+# 章节音频与字幕 JSON 全部托管在云盘，不入库。
+# ============================================================
+
+# ---------- 本地媒体资源（走云盘直链，不入库）----------
+# build_manifest.py 的输入/中间产物；上传云盘后可删除
+books/
+subs/
+
+# 字幕源文件（SRT/VTT/LRC 仅构建期使用，前端只读 JSON）
+*.srt
+*.vtt
+*.lrc
+
+# ---------- 构建 / 部署脚本（仅本地使用）----------
+# 如需他人复现"TXT → 音频 + 清单"流程，删除下面几行即可一并入库
+build_manifest.py
+convert_to_cloud.py
+serve.py
+
+# ---------- 自检脚本（开发辅助）----------
+_*.py
+_*.mjs
+
+# ---------- Python 缓存 ----------
+__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+.venv/
+venv/
+env/
+
+# ---------- 系统与编辑器 ----------
+.DS_Store
+Thumbs.db
+desktop.ini
+*.swp
+*~
+.idea/
+.vscode/
+*.code-workspace
+
+# ---------- 临时 / 日志 / 备份 ----------
+*.log
+*.tmp
+*.bak
+*.bak2
+*.orig
+.cache/
+node_modules/
+
+# ---------- 环境变量与密钥 ----------
+.env
+.env.*
+*.key
+*.pem
