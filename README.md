@@ -65,13 +65,25 @@ books-config/<书名>.json
           └── subtitle.json → https://<云盘>/<书名>/sub/001_xxx.json
 ```
 
-云盘需满足：
+### ⚠️ 必须 HTTPS（混合内容陷阱）
+
+播放器部署在 HTTPS 域名上时，音频/字幕直链**也必须是 HTTPS**。
+浏览器会拦截 HTTPS 页面里的 HTTP 子资源（混合内容），
+表现为「音频加载失败」，本地 `http://127.0.0.1` 测试没问题但线上失败。
+
+若云盘本体只支持 HTTP（如 OpenList/AList 默认监听 `http://IP:5244`），
+需用 **Cloudflare Tunnel** 套一层 HTTPS。完整搭建步骤见 [TUNNEL_SETUP.md](TUNNEL_SETUP.md)。
+
+### 云盘需满足的条件
 
 | 条件 | 原因 |
 |---|---|
+| **HTTPS** | 播放器站点是 HTTPS 时，HTTP 资源会被混合内容拦截 |
 | 支持 HTTP Range（206） | 进度条拖动 |
-| `Access-Control-Allow-Origin: *` | 跨域加载字幕 JSON |
+| `Access-Control-Allow-Origin: *` | 跨域加载字幕 JSON（`<audio>` 标签可绕过，`fetch` 不行） |
 | 正确的 `Content-Type` | `audio/mpeg` / `application/json` |
+
+> Cloudflare Tunnel 会自动处理 HTTPS 和 CORS，是最省事的方案。
 
 ---
 
