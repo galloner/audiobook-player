@@ -29,8 +29,10 @@ python -m http.server 8080
 online/
 ├── index.html                 入口
 ├── manifest.json              书目索引
+├── wrangler.jsonc             Cloudflare Workers 部署配置
+├── .assetsignore              Workers 静态资源上传排除规则
 ├── _headers                   静态托管响应头（缓存策略）
-├── _redirects                 静态托管重定向
+├── _redirects                 静态托管重定向（本项目为空，见部署章节）
 ├── css/
 │   └── style.css              样式（设计令牌集中在文件顶部）
 ├── js/
@@ -47,6 +49,8 @@ online/
 
 **不包含**（已加入 `.gitignore`）：`books/`（章节音频）、`subs/`（字幕 JSON）、
 构建脚本、自检脚本、字幕源文件。
+
+部署到 Workers 时实际只上传 **17 个文件**（`.git/`、配置文件、脚本均被 `.assetsignore` 排除）。
 
 ---
 
@@ -200,6 +204,62 @@ books-config/<书名>.json
 
 ## 部署
 
+### Cloudflare Workers（推荐）
+
+仓库已内置 `wrangler.jsonc`，直接连接 Git 部署即可：
+
+```
+Framework preset : None
+Build command    : npx wrangler deploy
+Build output dir : /（仓库根目录）
+```
+
+或命令行手动部署：
+
+```bash
+npx wrangler deploy
+```
+
+配置要点：
+
+| 配置 | 值 | 说明 |
+|---|---|---|
+| `assets.directory` | `.` | 仓库根目录即静态资源 |
+| `assets.html_handling` | `auto-trailing-slash` | `/` → `/index.html`，`/index.html` → 307 → `/` |
+| `assets.not_found_handling` | 不设置（默认 404） | 见下方警告 |
+
+#### 两个必须注意的坑
+
+**1. `_redirects` 不能写 `/ → /index.html 200`**
+
+Workers 默认 `html_handling: auto-trailing-slash` 已内置这个映射。
+再写一遍会与内置规则冲突形成无限循环，部署报错：
+
+```
+Invalid _redirects configuration:
+Line N: Infinite loop detected in this rule. This would cause a redirect
+to strip `.html` or `/index` and end up triggering this rule again.
+[code: 100324]
+```
+
+本项目 `_redirects` 已清空（仅保留说明注释）。
+
+**2. 用 `.assetsignore` 排除非资源文件**
+
+`assets.directory` 下的**所有文件**都会被当作静态资源上传，
+包括 `.git/` 目录。不排除会出现日志里大量 `+ /.git/HEAD`、`+ /.git/config`，
+既浪费上传配额又把 Git 元数据暴露到公网。
+
+本项目 `.assetsignore` 已排除：`.git/`、`_headers`、`_redirects`、
+`wrangler.jsonc`、`*.py`、`*.md`、`_*.mjs` 等。
+实际只上传 **17 个文件**（全部是前端运行必需）。
+
+**3. 不要用 `not_found_handling: "single-page-application"`**
+
+该选项会让未命中的请求返回 `index.html`（200），
+导致缺失的音频/字幕/字体请求收到 HTML，`<audio>` 报格式错误。
+本项目所有资源按真实路径直接命中，无需兜底。
+
 ### Cloudflare Pages
 
 ```
@@ -208,10 +268,13 @@ Build command    : (留空)
 Build output dir : /（仓库根目录）
 ```
 
+Pages 同样识别 `_headers`，但**不识别 `.assetsignore`**（Pages 只上传 Git 跟踪的文件，
+`.git/` 天然不会上传）。
+
 ### 其他平台
 
 Vercel / Netlify / GitHub Pages 均可，输出目录填仓库根目录。
-`_headers` 与 `_redirects` 仅 Cloudflare Pages / Netlify 识别，其他平台会忽略。
+`_headers` 与 `_redirects` 仅 Cloudflare / Netlify 识别，其他平台会忽略。
 
 > 不要加 `/* → /index.html 200` 的 SPA 兜底规则，
 > 否则缺失的资源会被重写成 HTML，导致 `<audio>` 报格式错误。
